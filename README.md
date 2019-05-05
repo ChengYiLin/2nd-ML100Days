@@ -272,3 +272,25 @@ dataframe.describe()
 * <a href="https://matplotlib.org/gallery/index.html">matplotlib</a>
 
 * <a href="https://seaborn.pydata.org/examples/index.html">seaborn</a>
+
+## Day6 : EDA與Outlier檢查
+
+### 甚麼是例外值 (outlier)
+<b>異常值 (Outliers) 出現的可能原因 : <br></b>
+<ol>
+	<li>可能的錯誤紀錄/手誤/系統性錯誤</li>
+	<li>所以未知值，隨意填補 ( 例如:年齡 = -1 或 999 )</li>
+</ol>
+
+<b>檢查 Outliers 的流程與方法 : <br></b>
+<ul>
+	<li>盡可能確認每⼀個欄位的意義</li>
+	<li>透過檢查數值範圍 (五值、平均數及標準差) 或繪製散點圖 (scatter)、分布圖 (histogram) 或其他圖檢查是否有異常</li>
+</ul>
+
+<b>對 Outliers 的處理⽅法 : <br></b>
+<ul>
+	<li>新增欄位⽤以紀錄異常與否</li>
+	<li>填補 (取代)</li>
+	<li>視情況以中位數, Min, Max 或平均數填補(有時會⽤ NA)</li>
+</ul>
