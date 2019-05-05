@@ -242,3 +242,33 @@ import pandas as pd
 
 dataframe = pd.get_dummies(dataframe)
 ```
+
+## Day5 : EDA資料分佈
+
+### 統計量化的方式
+* 計算集中趨勢
+	* 平均值 Mean
+	* 中位數 Median
+	* 眾數 Mode 
+
+* 計算資料分散程度
+	* 最小值 Min 、 最大值 Max
+	* 範圍 Range
+	* 四分位差 Quartiles 
+	* 變異數 Variance
+	* 標準差 Standard deviation
+
+```python
+import pandas as pd
+
+dataframe.describe()
+```
+
+<b>相關參考連結 : </b>
+<a href="http://www.hmwu.idv.tw/web/R_AI_M/AI-M1-hmwu_R_Stat&Prob.pdf">吳漢銘老師AI學校經理人班教材</a>
+
+### 常用的視覺化套件
+
+* <a href="https://matplotlib.org/gallery/index.html">matplotlib</a>
+
+* <a href="https://seaborn.pydata.org/examples/index.html">seaborn</a>
