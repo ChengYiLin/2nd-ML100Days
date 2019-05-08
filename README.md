@@ -294,3 +294,178 @@ dataframe.describe()
 	<li>填補 (取代)</li>
 	<li>視情況以中位數, Min, Max 或平均數填補(有時會⽤ NA)</li>
 </ul>
+
+### Ways to detect and remove the Outliers
+<a href="https://towardsdatascience.com/ways-to-detect-and-remove-the-outliers-404d16608dba">Reference : Ways to detect and remove the Outliers</a>
+<ul>
+	<li>作圖 : box plot (視覺呈現那些是異常值)</li>
+	<li>作圖 : scatter plot (視覺呈現那些是異常值)</li>
+	<li>統計 : Z-score ( Z score 是形容數值距離母群體平均值的距離，Z score 越大或小，就是 outlier</li>
+	<li>統計 : IQR score ( 他的算法是將四分級距法的<b>Q3(75%)-Q1(25%)</b>得到 IQR score ，再去找小於 Q1-1.5*IQR 及 大於 Q3+1.5*IQR 的數值量)</li>
+</ul>
+
+#### Z score
+```python
+from scipt import stats
+import numpy as np
+
+z = np.abs(stats.zscore(data))
+```
+
+#### IQR score
+```python
+Q3 = data.quantile(0.75)
+Q1 = data.quantile(0.25)
+
+IQR = Q3-Q1
+
+Outliers = data[ (data<(Q1 - 1.5 * IQR)) or ((Q3 + 1.5 * IQR)) ]
+```
+
+### Homework 補充 : ECDF (Empirical Cumulative Distribution Function)
+![](https://cdn-images-1.medium.com/max/1200/0*pavjOIiT3R_GWDdz)
+
+這種作圖方式可以顯示每筆數據的多寡及其相對應的百分位點，如上圖所示，我們先將數據由小到大排好，再將它的<b>排名除以總數</b>得到它的百分位，x 軸為我們的數值累加的結果(cumsum)，y軸為百分位(ECDF)。
+
+### Day7 : 常用的數值取代：中位數與分位數連續數值標準化
+
+### 如何處理例外值
+在上一章我們已經知道如何找出例外值(outlier)，處理例外值的方法就是將它以其他數值做填補，避免影響到母群體的結構
+
+<table>
+	<tr style="background: LightCyan; text-align: center;">
+		<th>常用以填補的統計值</th>
+		<th>方法</th>
+	</tr>
+	<tr>
+		<td>中位數(median)</td>
+		<td>np.median(value_array)</td>
+	</tr>
+	<tr>
+		<td>平均數(mean)</td>
+		<td>np.mean(value_array)</td>
+	</tr>
+	<tr>
+		<td>分位數(quantile)</td>
+		<td>np.quantile(value_arrar, q = ...)</td>
+	</tr>
+	<tr>
+		<td>眾數(mode)</td>
+		<td>dictionary method: 較快的方法<br>scipy.stats.mode(value_array): 較慢的方法</td>
+	</tr>
+</table>
+
+### 連續型數值標準化
+
+![](https://i.imgur.com/bVgoFqn.png)
+
+<b>為什麼要標準化?</b><p>因為不同單位可能會影響模型產出的結果，例如 1000 公克 vs 1 公斤 ； 1美元 vs 30元台幣 等</p>
+<b>一定要標準化嗎?</b><p>不一定，看你的模型是哪一種，例如 Regression model: 有差 ； Tree-based model: 沒差 等</p>
+
+<table>
+	<tr style="background: LightCyan; text-align: center;">
+		<th>常用的標準化方法</th>
+		<th>方法</th>
+	</tr>
+	<tr>
+		<td>Z轉換</td>
+		<td><img src="https://i.imgur.com/xlU3s8V.png" alt="z-value"></td>
+	</tr>
+	<tr>
+		<td>空間壓縮</td>
+		<td><p>Y 為輸出的空間範圍</p><img src="https://i.imgur.com/4y1D7tJ.png" alt="空間壓縮"></td>
+	</tr>
+</table>
+<p style="font-weight: bolder;">特殊狀況 : </p>
+有時候我們不會使用 min/max ⽅法進行標準化，⽽會採用 Qlow/Qhigh normalization (min = q1 ; max = q99)
+
+### 是否每次資料都要進行標準化呢?
+有的時候好，有得時候不好，為什麼?
+<ol>
+	<li>Good</li>
+	<ol>
+		<li>某些演算法 (如 SVM, DL) 等，對權重敏感或對損失函數平滑程度有幫助者</li>
+		<li>特徵間的量級差異甚大</li>
+	</ol>
+	<li>Bad</li>
+	<ol>
+		<li>有些指標性的單位是不適合做 normalization，如 錢的多寡</li>
+		<li>量的單位在某些特徵上是有意義的，對於 model 來說是重要的</li>
+	</ol>
+</ol>
+
+
+
+### Homework 補充 : collection 的 defaultdict 及 Counter
+
+#### defaultdict
+我們在使用 python dictionary 的時候，要調用key值來操作的時候，都要先看看 key 值是否存在，不然就會出現 key Error，遇到這種狀況過去我們只能乖乖地先給 dictionary key 值，再做操作，如下方程式碼
+```python
+word_list = ['a','b','x','a','a','b','z']
+counter = {}
+for element in word_list:
+    if element not in counter:
+        counter[element] = 1
+    else:
+        counter[element] += 1
+```
+<p>那麼我們就不能直接先給 dictionary 全部給一個 default 值 0，就直接給它 += 1，不用再去 if/else 判斷嗎?</p>
+其實是可以的，collection 這套件中的 defaultdict 就解決這個問題省去我們的麻煩，但我們在宣告 defaultdict 給它一個 default 值時，我們需要餵它一個 <font color="red">Function</font>
+
+```python
+from collections import defaultdict
+
+better_dict = defaultdict(int) # default值以一個 int() function 產生
+
+word_list = ['a','b','x','a','a','b','z']
+
+for element in word_list:
+    better_dict[element]+=1
+```
+
+function 我們可以自行去定義，也可使用 python 內建的
+
+```python
+from collections import defaultdict
+
+def zero(): return 0  # 小提醒: 也可寫成 zero = lambda:0
+
+counter_dict = defaultdict(zero) # default值以一個zero()方法產生
+a_list = ['a','b','x','a','a','b','z']
+
+for element in a_list:
+        counter_dict[element] += 1
+
+print(counter_dict) # 會輸出defaultdict(<function zero at 0x7fe488cb7bf8>, {'x': 1, 'z': 1, 'a': 3, 'b': 2})
+```
+
+其他小例子
+```python
+from collections import defaultdict
+
+multi_dict = defaultdict(list) 
+key_values = [('even',2),('odd',1),('even',8),('odd',3),('float',2.4),('odd',7)]
+
+for key,value in key_values:
+    multi_dict[key].append(value)
+
+print(multi_dict) # 會輸出defaultdict(<class 'list'>, {'float': [2.4], 'even': [2, 8], 'odd': [1, 3, 7]})
+```
+#### Counter
+除了上述的 defaultdict 之外, collection 還有一個方便我們去做 count 的資料結構 <b>Counter</b>，下方是它的例子
+```python
+from collections import Counter
+
+a_str = 'abcaaabccabaddeae'
+counter = Counter(a_str) # 可直接由初始化的方式統計個數
+print(counter)
+print(counter.most_common(3)) # 輸出最常出現的3個元素
+print(counter['z']) # 對於不存在的key值給出default值0
+counter.update('aaeebbc') # 可用update的方式繼續統計個數
+```
+
+<p>參考 :</p>
+<ul>
+	<li> <a href="https://ithelp.ithome.com.tw/articles/10193094">30天python雜談</a></li>
+	<li> <a href="https://docs.python.org/3.7/library/collections.html#collections.defaultdict">python 官方</a> </li>
+</ul>
