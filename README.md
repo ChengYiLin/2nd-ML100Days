@@ -761,3 +761,34 @@ np.corrcoef(x, y)
 ```py
 plt.scatter(x, y)
 ```
+
+## Day 10 : EDA from Correlation
+* **Correlation 小提醒**
+  
+我們在作圖的時候，如果其中一個 axis 是屬於種類的話 (如不是 1 就是 0，非連續型資料)
+
+這時我們算 correlation 時就不能用一般的 pearson correlation，
+
+而是要用 **point-biaseral correlation** 來進行處理
+
+[Reference](https://blog.xuite.net/stat200635/Biostatistics/574342853-Point-biserial%E7%9B%B8%E9%97%9C%E4%BF%82%E6%95%B8+%28Point-biserial+correlation+coefficient%29)
+
+```python
+from scipy import stats
+
+# pointbiserialr
+stats.pointbiserialr(a, b)
+
+# pearsonr
+stats.pearsonr(a, b)
+```
+
+* **作圖小提醒**
+  
+![](https://i.imgur.com/fyhjUm6.png)
+
+* **作圖小提醒**
+
+我們可以取修改單位，或是用 log 去處理
+
+![](https://i.imgur.com/tvkpKfJ.png)
