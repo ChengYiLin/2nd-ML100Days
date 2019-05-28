@@ -469,3 +469,262 @@ counter.update('aaeebbc') # 可用update的方式繼續統計個數
 	<li> <a href="https://ithelp.ithome.com.tw/articles/10193094">30天python雜談</a></li>
 	<li> <a href="https://docs.python.org/3.7/library/collections.html#collections.defaultdict">python 官方</a> </li>
 </ul>
+
+## Day 8 : 常用的 DataFrame 操作
+> Pandas 官方參考資料 : [link](https://pandas.pydata.org/Pandas_Cheat_Sheet.pdf)
+
+### <font color=#4472C4>Creating Dataframe</font>
+#### <font color='red'>One index</font> 
+Way1 : Dictionary
+```python
+Name = ['Nick','Leo','Martin']
+Age = [23,28,22]
+Gender = ['M','F','M']
+
+people = pd.DataFrame(
+    {'Name':Name,
+     'Age':Age,
+     'Gender':Gender},
+    index = ['a','b','c']
+)
+people
+```
+
+Way2 : Array
+```python
+people = pd.DataFrame(np.arange(9).reshape((3,3)),
+                     index=['a','b','c'],
+                     columns=['Col1','Col2','Col3'])
+people
+```
+
+#### <font color='red'>MultiIndex</font>
+
+```python
+Name = ['Nick','Leo','Martin']
+Age = [23,28,22]
+Gender = ['M','F','M']
+
+people = pd.DataFrame(
+    {'Name':Name,
+     'Age':Age,
+     'Gender':Gender},
+    index = pd.MultiIndex.from_tuples(
+        [('B',1),('B',2),('A',3)],
+        names=['Grade','Num']
+    )
+)
+people
+```
+
+### <font color=#4472C4>Concatenate Dataframe</font>
+Data : 
+```python
+# 生成範例用的資料 ()
+df1 = pd.DataFrame({'A': ['A0', 'A1', 'A2', 'A3'],
+                    'B': ['B0', 'B1', 'B2', 'B3'],
+                    'C': ['C0', 'C1', 'C2', 'C3'],
+                    'D': ['D0', 'D1', 'D2', 'D3']},
+                   index=[0, 1, 2, 3])
+df2 = pd.DataFrame({'A': ['A4', 'A5', 'A6', 'A7'],
+                    'B': ['B4', 'B5', 'B6', 'B7'],
+                    'C': ['C4', 'C5', 'C6', 'C7'],
+                    'D': ['D4', 'D5', 'D6', 'D7']},
+                   index=[4, 5, 6, 7])
+df3 = pd.DataFrame({'A': ['A8', 'A9', 'A10', 'A11'],
+                    'B': ['B8', 'B9', 'B10', 'B11'],
+                    'C': ['C8', 'C9', 'C10', 'C11'],
+                    'D': ['D8', 'D9', 'D10', 'D11']},
+                   index=[8, 9, 10, 11])
+
+df4 = pd.DataFrame({'B': ['B2', 'B3', 'B6', 'B7'],
+                    'D': ['D2', 'D3', 'D6', 'D7'],
+                    'F': ['F2', 'F3', 'F6', 'F7']},
+                   index=[2, 3, 6, 7])
+```
+
+#### 將 data 接在下面 (沿縱軸加上去)
+Way 1 : append
+```python
+df1.append(df3)
+```
+
+Way 2 : concat
+```python
+df_one_index = pd.concat([df1,df2])
+df_multi_index = pd.concat([df1,df2],keys=['d1','d2'])
+```
+
+#### 將 data 接在旁邊 (沿橫軸加上去)
+Use **concat**
+```python
+df = pd.concat([df1,df2],axis=1)
+```
+
+#### 條件合併 (inner、outer)
+Use **merge**
+```python
+# 聯集
+df = pd.merge(df1,df4,how='outer')
+
+# 交集
+df = pd.merge(df1,df4,how='inner')
+```
+
+### <font color=#4472C4>Reshaping Dataframe</font>
+Data
+```python
+columns = ['name', 'age', 'gender', 'job']
+
+user1 = pd.DataFrame(
+	[['alice',19, "F", "student"], 
+	['john', 26, "M", "student"],
+	['eric', 22, "M", "student"],
+	['paul', 58, "M", "manager"],
+	['peter',33, 'M', 'engineer'],
+	['julie',44, 'F', 'scientist']],
+	columns=columns)
+```
+
+#### <font color='red'>melt</font>
+melt 是將 dataframe 轉換成只有兩欄的 Dataframe，分別是  variable 及 value。
+
+variable 是欄位名稱，value 是欄位的值，我們也可決定那些原本的欄位當 index
+
+```python
+# 我們可以用參數的調整決定那些欄位的去留，也可決定那些欄位要當 index
+test = user1.melt(id_vars=['name'],value_vars='age',var_name='col')
+test
+```
+
+#### <font color='red'>pivot</font>
+pivot 則是 melt 的相反操作，將欄位的值轉換成欄位，所以它常和 melt 搭配操作，讓我們有效率的 reshape 我們的 dataframe
+
+這邊特別要注意的是 pivot 參數記得要填寫，不像melt，不然就給你 Error
+```python
+test.pivot(index='name',columns='variable',values='value')
+```
+
+### <font color=#4472C4>Sorting in Dataframe</font>
+```python
+# sort value
+df.sort_values('col_you_wanr_to_sort',ascending=False)
+
+# sort index
+df.sort_index()
+```
+
+### <font color=#4472C4>Subset</font>
+```python
+# 依條件篩選我們的 data ， 並顯示所有 columns
+sub_df = df[df.column_name > 10]
+
+# 
+```
+
+### <font color=#4472C4>Groupby</font>
+Data :
+```python
+data = {'Team': ['Riders', 'Riders', 'Devils', 'Devils', 'Kings',
+         'kings', 'Kings', 'Kings', 'Riders', 'Royals', 'Royals', 'Riders'],
+         'Rank': [1, 2, 2, 3, 3,4 ,1 ,1,2 , 4,1,2],
+         'Year': [2014,2015,2014,2015,2014,2015,2016,2017,2016,2014,2015,2017],
+         'Points':[876,789,863,673,741,812,756,788,694,701,804,690]}
+df = pd.DataFrame(data)
+```
+
+依 column 的種類去做分群
+```python
+group_data = df.groupby('Year')
+for name,group in group_data:
+    print(name)
+    print(group)
+
+#2014
+#     Team  Rank  Year  Points
+#0  Riders     1  2014     876
+#2  Devils     2  2014     863
+#4   Kings     3  2014     741
+#9  Royals     4  2014     701
+#2015
+#       Team  Rank  Year  Points
+# 1   Riders     2  2015     789
+# 3   Devils     3  2015     673
+# 5    kings     4  2015     812
+# 10  Royals     1  2015     804
+# 2016
+#      Team  Rank  Year  Points
+# 6   Kings     1  2016     756
+# 8  Riders     2  2016     694
+# 2017
+#       Team  Rank  Year  Points
+# 7    Kings     1  2017     788
+# 11  Riders     2  2017     690
+```
+我們也可以選擇特定族群
+```python
+group_data.get_group(2014)
+
+#     Team  Rank  Year  Points
+#0  Riders     1  2014     876
+#2  Devils     2  2014     863
+#4   Kings     3  2014     741
+#9  Royals     4  2014     701
+```
+我們可以針對特定族群套用特定的函數運算
+```py
+# 這邊我們選擇 Points 我們特定的 column，並使用 np.mean 運算
+group_data.Points.agg(np.mean)
+
+# 我們也可以套用多重的 函數
+group_data.Points.agg([np.mean, np.std, np.sum])
+```
+我們可以自行設定 function 將數值轉換(放大、縮減甚麼的)
+```python
+group_data.get_group(2014)
+
+# 我們定義 function 將數值 *2
+score = lambda x:x*2
+
+# 搭配我們的 transform ，將我們指定的 Points column 的值乘 2
+group_data.get_group(2014).Points.transform(score)
+```
+
+
+### <font color=#4472C4>Other</font>
+#### 重新命名欄位
+```python
+# rename 函數 用 dictionary 來改變 column 及 index 的名稱
+df.rename(columns={"yeas_old":"age",'gender':'job'},index={'alice':'Alice'})
+```
+
+#### index的相關操作
+```python
+# 重設我們的 index
+df.reset_index()
+
+# 照我們的 index 排序
+df.sort_index()
+```
+
+#### 去除特定的index
+```python
+# 去除 index (列)
+df.drop(['index_name_1','index_name_2'])
+```
+
+#### 去除一整欄 column
+```python
+# 去除 column (行)
+df.drop(columns=['columns_name_1','columns_name_2'])
+```
+
+#### 時間序列的好夥伴 stack、unstack
+[參考資料](https://www.cnblogs.com/bambipai/p/7658311.html)
+```python
+# 堆疊
+df.stack()
+
+# 去除堆疊
+df.unstack()
+```
