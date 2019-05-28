@@ -728,3 +728,36 @@ df.stack()
 # 去除堆疊
 df.unstack()
 ```
+
+## Day 9 : correlation/相關係數簡介
+
+### What is Correlation Coefficient?
+相關係數是其中⼀個常用來了解各個欄位與我們想要預測的目標之間的關係指標。
+
+相關係數是衡量**兩個隨機變量之間**線性關係的強度和方向
+
+![](https://i.imgur.com/YdVE14p.png)
+
+相關係數是一個介於 -1 ~ 1 之間的值，<br>
+負值代表負相關，正值代表正相關，<br>
+數值的大小代表相關的程度
+
+![](https://i.imgur.com/0SXvHfG.png)
+
+如果我們想了解兩個變數之間的 **線性關係** 時，<br>
+能給出一個 -1 ~ 1 之間的量化關係
+
+### Code
+np.corrcoef( )
+```py
+# 使用 numpy 的 corrcoef 來算相關係數
+np.corrcoef(x, y)
+
+# Output : 
+# array([[1.        , 0.02215266],
+#        [0.02215266, 1.        ]])
+```
+除了得到數值外，我們也很常使用 scatter 來視覺化
+```py
+plt.scatter(x, y)
+```
