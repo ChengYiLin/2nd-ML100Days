@@ -792,3 +792,97 @@ stats.pearsonr(a, b)
 我們可以取修改單位，或是用 log 去處理
 
 ![](https://i.imgur.com/tvkpKfJ.png)
+
+## Day 11 : 繪圖與樣式 ＆ KDE (Kernel Density Estimation)
+
+### <font color=#4472C4>繪圖樣式</font>
+matplotlib 的繪圖風格可以主要有三種樣式
+* default
+* ggplot
+* seaborn
+  
+**code** 
+```python
+import matplotlib.pyplot as plt
+
+# 在畫圖前先設定
+plt.style.use('default') 
+plt.style.use('ggplot') 
+plt.style.use('seaborn') 
+```
+
+### <font color=#4472C4>Kernal Density Estimation (KDE)</font>
+KDE 是一種估計未知的密度函數，觀察變數的機率密度
+
+它有以下幾個特點 :
+* 用無母數方法，對分布沒有假設
+* 計算量大，對電腦吃效能
+* 在線下的面積總和為 1
+
+
+當要算 KDE 時，有幾種常見的三種函數
+1. Gaussian 
+2. Cosine
+3. Triangular
+
+```python
+# KDE, 比較不同的 kernel function，用 kernal 去做調整
+sns.kdeplot(app_train.loc[app_train['TARGET'] == 0, 'DAYS_BIRTH'] / 365, label = 'Gaussian esti.', kernel='gau')
+sns.kdeplot(app_train.loc[app_train['TARGET'] == 0, 'DAYS_BIRTH'] / 365, label = 'Cosine esti.', kernel='cos')
+sns.kdeplot(app_train.loc[app_train['TARGET'] == 0, 'DAYS_BIRTH'] / 365, label = 'Triangular esti.', kernel='tri')
+
+plt.xlabel('Age (years)'); plt.ylabel('Density'); plt.title('Distribution of Ages');
+plt.show()
+```
+![](https://i.imgur.com/lVoyVpg.png)
+
+### <font color=#4472C4>Distplot (將 bar 與 Kde 同時呈現)</font>
+
+```python
+sns.distplot(app_train.loc[app_train.TARGET==1,'DAYS_BIRTH'] / 365, label = 'target == 1')
+plt.legend()
+plt.xlabel('Age (years)'); plt.ylabel('Density'); plt.title('Distribution of Ages');
+plt.show()
+```
+
+![](https://i.imgur.com/DNQXshO.png)
+
+### <font color=#4472C4>分群比較</font>
+常常我們要分群做分析，例如 20 ~ 70 歲，我們要分組，那要怎麼做呢?
+
+**舉例 :** 
+
+先將 data 歸類，分好組別
+```python
+# 我們對於連續數值可以先用 linspace 分好，製造出陣列
+# 20 ~ 70 歲，分 10 組，切 11 個點
+bin_cut = np.linspace(20, 70, num = 11)
+
+# 我們再用 pd.cut 去切，去分群
+# pd.cut(你要切的欄位，bins = 剛剛所分好的陣列範圍 )
+age_data['YEARS_BINNED'] = pd.cut(age_data['YEARS_BIRTH'], bins = bin_cut)
+
+# 顯示不同組的數量 
+print(age_data['YEARS_BINNED'].value_counts())
+```
+
+使用 groupby 來做分群，分群做平均
+```python
+# 計算每個年齡區間的 Target、DAYS_BIRTH與 YEARS_BIRTH 的平均值
+age_groups  = age_data.groupby('YEARS_BINNED').mean()
+```
+![](https://i.imgur.com/CKFzahE.png)
+
+我們就可以做分群的 bar chart
+```python
+# 以年齡區間為 x, target 為 y 繪製 barplot
+plt.figure(figsize=(8,6))
+px = age_groups.index
+py = age_groups.TARGET*100
+sns.barplot(px, py)
+
+# Plot labeling
+plt.xticks(rotation = 75); plt.xlabel('Age Group (years)'); plt.ylabel('Failure to Repay (%)')
+plt.title('Failure to Repay by Age Group');
+```
+![](https://i.imgur.com/4ncqUJq.png)
