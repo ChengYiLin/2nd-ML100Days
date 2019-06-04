@@ -876,6 +876,7 @@ age_groups  = age_data.groupby('YEARS_BINNED').mean()
 我們就可以做分群的 bar chart
 ```python
 # 以年齡區間為 x, target 為 y 繪製 barplot
+import seaborn as sns
 plt.figure(figsize=(8,6))
 px = age_groups.index
 py = age_groups.TARGET*100
@@ -886,3 +887,128 @@ plt.xticks(rotation = 75); plt.xlabel('Age Group (years)'); plt.ylabel('Failure 
 plt.title('Failure to Repay by Age Group');
 ```
 ![](https://i.imgur.com/4ncqUJq.png)
+
+## Day 12 : 把連續型變數離散化
+
+連續型變數連續化的目的 : 
+* 數據簡單化，選項變少了
+* 離散型變數比較穩定，干擾比較小
+
+### 常用離散劃分法
+1. 等寬劃分 (依連續型 data 的範圍，等寬切幾等分)
+2. 等頻劃分 (將資料分成幾等分，個等分的資料數量一樣)
+3. 聚類劃分 (將資料依類別劃分，像 Day11 提到一樣)
+
+#### code
+```python
+# 初始設定 Ages 的資料
+ages = pd.DataFrame({"age": [18,22,25,27,7,21,23,37,30,61,45,41,9,18,80,100]})
+
+# 新增欄位 "equal_width_age", 對年齡做 等寬劃分(pd.cut)
+ages["equal_width_age"] = pd.cut(ages["age"], 4)
+
+# 新增欄位 "equal_freq_age", 對年齡做 等頻劃分(pd.qcut)
+ages["equal_freq_age"] = pd.qcut(ages["age"], 4)
+
+# 觀察離散劃分下, 每個種組距各出現幾次
+print(ages["equal_width_age"].value_counts())
+print(ages["equal_freq_age"].value_counts())
+```
+
+## Day 13 : 程式實作(複習groupby 及 離散化)
+
+**Hint** : 先離散化後，再用 groupby 製成分類
+
+## Day 14 : Subplots
+使用時機 : 
+* 同一組資料，但想同時⽤用不同的圖型呈現
+* 有很多相似的資訊要呈現時 (如不同組別的比較)
+
+### example 
+```py
+# 每張圖大小為 8x8，先設定我們 figure 的大小
+plt.figure(figsize=(8,8))
+
+# plt.subplot 三碼如上所述, 分別表示 row總數, column總數, 本圖示第幾幅(idx)
+plt.subplot(321)
+plt.plot([0,1],[0,1], label = 'I am subplot1')
+plt.legend()
+
+plt.subplot(322)
+plt.plot([0,1],[1,0], label = 'I am subplot2')
+plt.legend()
+
+plt.subplot(323)
+plt.plot([1,0],[0,1], label = 'I am subplot3')
+plt.legend()
+
+plt.subplot(324)
+plt.plot([1,0],[1,0], label = 'I am subplot4')
+plt.legend()
+
+plt.subplot(325)
+plt.plot([0,1],[0.5,0.5], label = 'I am subplot5')
+plt.legend()
+
+plt.subplot(326)
+plt.plot([0.5,0.5],[0,1], label = 'I am subplot6')
+plt.legend()
+
+
+# 呈現
+plt.show()
+```
+
+## Day 15 : Heatmap & Grid-plot
+
+### Heat map 
+Heatmap 常用於呈現訊息的強弱 (以顏⾊色深淺呈現)，也常用於呈現混淆矩陣
+
+* 常用於呈現變數間的相關性
+* 也可以用於呈現不同條件下，數量的高低關係
+
+#### example
+```py
+# 先建立 相關係數 的陣列
+data = app_train[['TARGET', 'EXT_SOURCE_1', 'EXT_SOURCE_2', 'EXT_SOURCE_3', 'DAYS_BIRTH']]
+data_corrs = data.corr()
+
+# 繪製相關係數 (correlations) 的 Heatmap
+plt.figure(figsize = (8, 6))
+sns.heatmap(data_corrs, cmap = plt.cm.RdYlBu_r, vmin = -0.25, annot = True, vmax = 0.6)
+plt.title('Correlation Heatmap')
+```
+
+### Gridplot 
+是一個預設的繪圖方式， seaborn 幫你分析個變數間的關係，結合 scatter plot 與 historgram 的好處來呈現變數間的相關程度
+
+#### example
+
+```py
+# 定義我們的繪圖樣本數
+N_sample = 1000
+# 把 NaN 數值刪去, 並限制資料上限為 1000 : 因為要畫點圖, 如果點太多，會畫很久!
+plot_data = plot_data.dropna().sample(n = N_sample)
+# 建立 pairgrid 物件
+grid = sns.PairGrid(data = plot_data, size = 3, diag_sharey=False,
+                    hue = 'TARGET', vars = [x for x in list(plot_data.columns) if x != 'TARGET'])
+
+# 我們可以定義不同的畫圖方式
+# 上半部為 scatter
+grid.map_upper(plt.scatter, alpha = 0.2)
+
+# 對角線畫 histogram
+grid.map_diag(sns.kdeplot)
+
+# 下半部放 density plot
+grid.map_lower(sns.kdeplot, cmap = plt.cm.OrRd_r)
+
+plt.suptitle('Ext Source and Age Features Pairs Plot', size = 32, y = 1.05)
+plt.show()
+```
+
+## Day 16 : 模型初體驗 Logistic Regression (Kaggle)
+
+先體驗 kaggle 使用過程，模型的詳細說明之後講
+
+![](https://i.imgur.com/VDZNZI6.jpg)
