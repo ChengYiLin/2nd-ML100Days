@@ -20,6 +20,9 @@
     * 通常是以一些數學評估的指標來衡量,例如: 正確率、Mean absolute error等
 
 ## Day 2 : EDA-1/讀取資料
+
+![](https://i.imgur.com/6xUcinV.jpg)
+
 ### 甚麼是 EDA ? 
 **EDA(Exploratory Data Analysis)** 透過 **視覺化/統計工具**進行分析，達到三個主要目的
 * 了解資料
@@ -244,6 +247,8 @@ dataframe = pd.get_dummies(dataframe)
 ```
 
 ## Day5 : EDA資料分佈
+
+![](https://i.imgur.com/6aQyKGk.jpg)
 
 ### 統計量化的方式
 * 計算集中趨勢
@@ -1012,3 +1017,39 @@ plt.show()
 先體驗 kaggle 使用過程，模型的詳細說明之後講
 
 ![](https://i.imgur.com/VDZNZI6.jpg)
+
+---
+
+## Day 17 : 特徵工程簡介
+
+![](https://i.imgur.com/nl40vRy.jpg)
+
+特徵工程就是我們將一個事實(例如性別、房屋坪數、官階等)，轉換到對應分數的過程。
+
+這個過程通常是在 **資料彙整之後** 及 **訓練模型之前**
+
+我們在做特徵工程時，必須去設計中間的轉換過程，將 Fact 轉換成 Score，之後再拿去訓練模型
+
+![](https://i.imgur.com/F2nKG1o.png)
+
+參考連結 : [link](https://www.zhihu.com/question/29316149)
+
+這邊先示範一個簡單的特徵工程
+```py
+import pandas as pd
+import numpy as np
+from sklearn.preprocessing import LabelEncoder, MinMaxScaler
+
+LEncoder = LabelEncoder()
+MMEncoder = MinMaxScaler()
+
+# 針對 dtype 為 'object' 的欄位先做 LabelEncoder，轉為數值型態
+# 再使用 MinMaxScaler 去做Normalization，降低不同特徵間的影響
+for c in df.columns:
+    df[c] = df[c].fillna(-1)
+    if df[c].dtype == 'object':
+        df[c] = LEncoder.fit_transform(list(df[c].values))
+    df[c] = MMEncoder.fit_transform(df[c].values.reshape(-1, 1))
+df.head()
+```
+
