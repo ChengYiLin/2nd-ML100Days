@@ -683,6 +683,10 @@ group_data.Points.agg(np.mean)
 
 # 我們也可以套用多重的 函數
 group_data.Points.agg([np.mean, np.std, np.sum])
+
+# 我們可以使用 count 來計數、nunique 來算 unique值 的總數
+group_data.Points.agg('count')
+group_data.Points.agg('nunique')
 ```
 我們可以自行設定 function 將數值轉換(放大、縮減甚麼的)
 ```python
@@ -1053,3 +1057,18 @@ for c in df.columns:
 df.head()
 ```
 
+## Day 18 : 特徵類型
+
+### 常見特徵類型
+* 數值型特徵 (int or float)
+* 類別型特徵 (object : 如型號、班級等)
+* 二元型特徵 (True or False)
+* 排序型特徵 (百分比等級、排名)
+* 時間型特徵 (年月日、時分秒)
+
+### 不同類型的特徵工程
+* 數值型特徵 --> 可能用函式或條件式轉換分數
+* 類別型特徵 --> 通常每一種類別對應道不同分數
+* 二元型特徵 --> 通常是轉換成 1(True) 和 0(False)
+* 排序型特徵 --> 有大小關係、非連續數字，通常直接轉成數值形態處理
+* 時間型特徵 --> 最難處理的，不能轉為數值或類別，會失去它的週期性及排序性(在 Day 25 說明)
