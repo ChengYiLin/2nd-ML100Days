@@ -1073,7 +1073,7 @@ df.head()
 * 排序型特徵 --> 有大小關係、非連續數字，通常直接轉成數值形態處理
 * 時間型特徵 --> 最難處理的，不能轉為數值或類別，會失去它的週期性及排序性(在 Day 25 說明)
 
-## Day 19 : 數值型特徵補缺失值與標準化
+## Day 19 : 數值型特徵 - 補缺失值與標準化
 
 ### 填補缺值要怎麼補 ?
 填補缺值最重要的是**欄位的領域知識**與**欄位中的非缺數值**
@@ -1137,6 +1137,38 @@ print(f'{len(num_features)} Numeric Features : {num_features}\n')
 # 拿去訓練模型(linear regression)，空值去補平均值
 df_mn = df.fillna(df.mean())
 train_X = df_mn[:train_num]
+estimator = LinearRegression()
+cross_val_score(estimator, train_X, train_Y, cv=5).mean()
+```
+
+## Day 20 : 數值型特徵 - 去除離群值
+如果只有少數幾筆資料跟其他數值差異很大，標準化無法處理
+
+**處理離群值的方法有兩種**
+* 把它去除掉
+* 把它做調整
+  * 用 ln 去轉換
+  * 縮尾或截尾 (取 第2.5百分位 至 第97.5百分位 為範圍) 
+
+除去離群值，將可使得模型預測較為準確，但隨意刪除可能也會刪掉重要訊息
+
+### code
+```python
+# 調整離群值，df[column].clip(x,y)
+# .clip 可以將超過這範圍的值都轉成範圍內
+# ex : 小於800的變成800，大於2500變成2500
+df['column_to_change'] = df['column_to_change'].clip(800, 2500)
+
+train_X = MMEncoder.fit_transform(df)
+estimator = LinearRegression()
+cross_val_score(estimator, train_X, train_Y, cv=5).mean()
+
+# 刪除離群值
+keep_index = (df['column_to_change']>800) & (df['column_to_change']<2500)
+df = df[keep_index]
+train_Y = train_Y[keep_index]
+
+train_X = MMEncoder.fit_transform(df)
 estimator = LinearRegression()
 cross_val_score(estimator, train_X, train_Y, cv=5).mean()
 ```
