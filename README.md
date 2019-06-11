@@ -1072,3 +1072,71 @@ df.head()
 * 二元型特徵 --> 通常是轉換成 1(True) 和 0(False)
 * 排序型特徵 --> 有大小關係、非連續數字，通常直接轉成數值形態處理
 * 時間型特徵 --> 最難處理的，不能轉為數值或類別，會失去它的週期性及排序性(在 Day 25 說明)
+
+## Day 19 : 數值型特徵補缺失值與標準化
+
+### 填補缺值要怎麼補 ?
+填補缺值最重要的是**欄位的領域知識**與**欄位中的非缺數值**
+
+![](https://i.imgur.com/WXcRUiz.png)
+
+#### 填補統計值
+* 類別型欄位 : 填補眾數
+* 數值型欄位 : 填補 Mean(不影響群體的偏態)、填補 Median(較影響群體的偏態)
+
+#### 填補指定值
+* 補 0 : 空缺原本就有 0 的含意 (如房間數量沒數值，就補0)
+* 補不可能出現的值 : 類別型欄位，當眾數不適合十，用特殊的值代表空缺值
+
+#### 填補預測值
+* 較為精確，但速度慢，需要有 Data Science 的概念
+* 若填補範圍廣，且是重要特徵欄位時可用本方式，但須提防 overfitting
+
+#### 補充資料
+[如何填補缺失值](https://juejin.im/post/5b5c4e6c6fb9a04f90791e0c)
+
+### 為何要標準化 ?
+
+舉一個簡單的例子，四個評審給 0~10 分的範圍，每位評審的給分標準不一樣，這樣就不太公平了
+![](https://i.imgur.com/TnbIxPI.png)
+
+![](https://i.imgur.com/DrFHBgS.png)
+
+常用的標準化方法有兩種
+* 標準化 (Standard Scaler) : 適用於數值為常態分佈
+* 最大最小化 (MinMax Scaler) : 適用於數值為均勻分佈
+
+![](https://i.imgur.com/ArWeMDD.png)
+
+#### 標準化/最小最大化的適用場合
+* 樹狀狀模型或非樹狀狀模型
+  * 非樹狀模型 (如線性迴歸, 羅吉斯迴歸, 類神經...等) : 會有影響
+  * 樹狀模型 (如決策樹, 隨機森林林, 梯度提升樹...等) : 不會有影響
+* 標準化 / 最小最大化使用上的差異
+  * 標準化 : 轉換不易受到極端值影響
+  * 最小最大化 : 轉換容易受到極端值影響
+
+### 總結
+* 補缺失值的方法因特徵類型與缺的意義不同，會有許多不同補法，需要因資料調整，無法一概而論
+* 補缺失值還要注意盡量**不要破壞資料分布**
+* 標準化的意義：平衡數值特徵間的影響力
+* 因為最大最小化對極端數值較敏感，所以如果資料不會有極端值，或已經去極端值，就適合用最大最小化，否則請用標準化
+
+### code
+```python
+# 查看哪些欄位是 null，並把它排在前面
+df.isnull().sum().sort_values(ascending=False).head()
+
+# 把數值(int、float)欄位取出來
+num_features = []
+for dtype, feature in zip(df.dtypes, df.columns):
+    if dtype == 'float64' or dtype == 'int64':
+        num_features.append(feature)
+print(f'{len(num_features)} Numeric Features : {num_features}\n')
+
+# 拿去訓練模型(linear regression)，空值去補平均值
+df_mn = df.fillna(df.mean())
+train_X = df_mn[:train_num]
+estimator = LinearRegression()
+cross_val_score(estimator, train_X, train_Y, cv=5).mean()
+```
