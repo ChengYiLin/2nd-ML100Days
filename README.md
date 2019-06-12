@@ -1172,3 +1172,33 @@ train_X = MMEncoder.fit_transform(df)
 estimator = LinearRegression()
 cross_val_score(estimator, train_X, train_Y, cv=5).mean()
 ```
+
+## Day 21 : 數值型特徵-去除偏態
+**在哪些情況下，需要對資料進行去偏態 ?**
+* 離群資料比例太高時
+* 平均值沒有代表性時
+
+**去除偏態的方法有哪幾種**
+* 對數去偏 (log1p : 常用於 **計數/價格** 這類非負且可能為0的欄位，因為可能為0，所以先加1，再取對數)
+* 方根去偏 (將數值減去最小值後，再開根號，常用於**最大值有限時適用**)
+* 分布去偏 (使用 boxcox 轉換函數來調整，可以調整參數來看分布，但被轉換的值記得要為正，不可為負)
+
+![](https://i.imgur.com/nFy8DMn.png)
+
+boxcox 的 lambda 參數表
+* lambda = 0, 取 log
+* lambda = 0.5, 方根去偏
+
+### code
+Data
+```python
+# 對數去偏
+df_fixed['column_to_fix'] = np.log1p(df_fixed['column_to_fix'])
+
+# 方根去偏
+from scipy import stats
+df_fixed['LotArea'] = stats.boxcox(df_fixed['LotArea'], lmbda=0.5)
+
+# 分布去偏(可以調 lmbda 參數 : 0~ 0.5 間)
+df_fixed['LotArea'] = stats.boxcox(df_fixed['LotArea'], lmbda=0.15)
+```
