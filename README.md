@@ -1202,3 +1202,54 @@ df_fixed['LotArea'] = stats.boxcox(df_fixed['LotArea'], lmbda=0.5)
 # 分布去偏(可以調 lmbda 參數 : 0~ 0.5 間)
 df_fixed['LotArea'] = stats.boxcox(df_fixed['LotArea'], lmbda=0.15)
 ```
+## Day 22 : 類別型特徵 - 基礎處理
+
+基本的處理方式有兩類 
+* **Label Encoding** : 
+  * 依出現的次序依序給它編碼，流水號的概念
+  * 缺點是數字的大小及次序，並無實質上的意義
+  * 適用於 **樹狀模型**
+* **One Hot Encoding** : 
+  * 為了改良數字大小的影響，將每一種類別都獨立成一個 column
+  * 記憶體佔用空間大，增加計算時間，類別越多越嚴重
+  * 適用於 **非樹狀模型**
+
+建議採取方式
+* 預先都先使用 Label Encoding
+* 除非該特徵重要性高，且類別數量較少，則可考慮 one hot encoding
+
+### code
+Label Encoding 
+```python
+# Label Encoder 轉換器
+from sklearn.preprocessing import LabelEncoder
+from sklearn.linear_model import LinearRegression
+
+df_temp = pd.DataFrame()
+for c in df.columns:
+    # 每個 object 欄位都經過 Label encoder 轉換
+    df_temp[c] = LabelEncoder().fit_transform(df[c])
+
+train_X = df_temp[:train_num]
+estimator = LinearRegression()
+start = time.time()
+print(f'shape : {train_X.shape}')
+print(f'score : {cross_val_score(estimator, train_X, train_Y, cv=5).mean()}')
+print(f'time : {time.time() - start} sec')
+```
+
+
+One Hot Encoding
+```python 
+# pandas.get_dummies 為內建的 one_hot_encoding 轉換器
+from sklearn.linear_model import LinearRegression
+
+df_temp = pd.get_dummies(df)
+
+train_X = df_temp[:train_num]
+estimator = LinearRegression()
+start = time.time()
+print(f'shape : {train_X.shape}')
+print(f'score : {cross_val_score(estimator, train_X, train_Y, cv=5).mean()}')
+print(f'time : {time.time() - start} sec')
+```
