@@ -1253,3 +1253,42 @@ print(f'shape : {train_X.shape}')
 print(f'score : {cross_val_score(estimator, train_X, train_Y, cv=5).mean()}')
 print(f'time : {time.time() - start} sec')
 ```
+
+## Day 23 : 類別型特徵 - 均值編碼
+
+**如果類別特徵看起來與目標值有顯著相關，應該如何編碼?**
+
+ex : 所居地 (類別特徵)  v.s. 房價 (目標值)
+
+這時候我們在將 類別特徵 做特徵工程時，可以將 目標值的平均 作為轉換的數值
+
+![](https://i.imgur.com/M5W4IPh.png)
+
+但當我們的樣本數非常少 ， 且樣本中剛好又有極端值時 ， 若只單純做平均會對我們的數據造成極大的誤差
+
+![](https://i.imgur.com/86qatWo.png)
+
+因此我們必須考慮樣本數，當作可靠度的參考
+* 樣本數多 ， 可靠度高 : 相信類別平均
+* 樣本數少 ， 可靠度低 : 相信所有類別總平均的結果
+
+為了避免均質化對於數據有影響，通常會進行 **均值平滑化**
+
+![](https://i.imgur.com/KcdB43q.png)
+
+```python
+# 只留類別型欄位
+object_features = []
+for dtype, feature in zip(df.dtypes, df.columns):
+    if dtype == 'object':
+        object_features.append(feature)
+df = df[object_features]
+
+# 使用 groupby 協助做均質化
+for c in df.columns:
+    mean_df = df.groupby([c])['Target_col'].mean().reset_index()
+    mean_df.columns = [c, f'{c}_mean']
+    data = pd.merge(data, mean_df, how='left')
+    # 做完均質化記得把原先的去掉
+    data = data.drop([c] , axis=1)
+```
